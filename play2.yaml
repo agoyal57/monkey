@@ -1,0 +1,18 @@
+--- 
+- 
+  hosts: slave1
+  become: true
+  name: play2
+  tasks: 
+    - 
+      command: "df -h"
+      name: "Find the disk space available"
+    - 
+      command: "ls -lrt"
+      name: "List all the files"
+    - 
+      name: "List All the Files"
+      register: output
+      shell: "ls -lrt"
+    - 
+      debug: var=output.stdout_lines
