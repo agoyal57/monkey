@@ -1,0 +1,364 @@
+Setup three machines with ubuntu linux 
+====================================================
+
+
+
+export PS1="\u:Ansible-Master > "
+export PS1="\u:Ansible-client-1 > "
+
+
+
+
+ansible-Master
+====================
+
+Public IP -	35.176.18.102
+Private IP -   172.31.25.118
+
+
+EAD+agoyal57@GBPF1DA5U2 MINGW64 ~
+$ ssh -i "Amitdxc_EC2.pem" ubuntu@ec2-35-176-18-102.eu-west-2.compute.amazonaws.com
+
+
+@@@@@@@@@ Commands to install Ansible @@@@@@@@@@@@@@@@@@@@@@@@@ 
+
+$ sudo apt-get update                 				      == >>  Update the machine software 
+$ sudo apt-get install software-properties-common    		      === >  Install properties 
+$ sudo apt-add-repository ppa:ansible/ansible 			      ==== >  Install Ansible repository on master node   
+$ sudo apt-get install ansible  				      ===== > Install the Ansible software 
+
+sudo apt-get install awscli			============>> To install AWS  Cli on ubuntu server.
+ 
+
+ubuntu@ip-172-31-25-118:~$ ansible --version
+ansible 2.9.6
+  config file = /etc/ansible/ansible.cfg
+  configured module search path = ['/home/ubuntu/.ansible/plugins/modules', '/usr/share/ansible/plugins/modules']
+  ansible python module location = /usr/lib/python3/dist-packages/ansible
+  executable location = /usr/bin/ansible
+  python version = 3.8.5 (default, Jul 28 2020, 12:59:40) [GCC 9.3.0]
+
+
+
+
+Client1 
+================
+
+Public IP -	18.135.28.85
+Private IP -    172-31-31-186
+
+ssh -i "Amitdxc_EC2.pem" ubuntu@ec2-18-135-28-85.eu-west-2.compute.amazonaws.com
+
+Install python 
+--------------------
+
+sudo apt-get update
+sudo apt-get install python
+
+
+Cliet2
+============
+
+Public IP -	18.130.94.98
+Private IP -   172.31.24.221
+
+ssh -i "Amitdxc_EC2.pem" ubuntu@ec2-18-130-94-98.eu-west-2.compute.amazonaws.com
+
+Install python 
+--------------------
+
+sudo apt-get update
+sudo apt-get install python3
+
+
+Client 3 -  CENTOS 7
+================================
+
+Copy Master Ansible public Key to centos .ssh/authorised_keys
+
+
+ssh -i "Amitdxc_EC2.pem" centos@ec2-18-133-238-220.eu-west-2.compute.amazonaws.com
+
+
+From ansible master 
+
+ubuntu:Ansible-Master > ssh centos@35.176.16.185
+
+
+Client 4 -  Centos 7 
+===========================
+
+ssh -i "Amitdxc_EC2.pem" centos@ec2-35-176-16-185.eu-west-2.compute.amazonaws.com
+
+ubuntu:Ansible-Master > ssh centos@35.176.16.185
+
+
+
+
+centos@18.133.238.220
+
+ubuntu:Ansible-Master > ssh centos@18.133.238.220
+The authenticity of host '18.133.238.220 (18.133.238.220)' can't be established.
+ECDSA key fingerprint is SHA256:UgqDpn/OscYEVDJpo1yj0hhW7JciZY+8BbR9iTZhZE4.
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+Warning: Permanently added '18.133.238.220' (ECDSA) to the list of known hosts.
+Last login: Mon Jan 25 14:21:18 2021 from cpc159465-newc20-2-0-cust185.16-2.cable.virginm.net
+[centos@ip-172-31-26-202 ~]$
+[centos@ip-172-31-26-202 ~]$
+
+
+Put a line ubuntu:Ansible-Master > vi /etc/ansible/hosts
+
+node3 ansible_ssh_host=18.133.238.220 ansible_user=centos
+
+
+node1 ansible_ssh_host=18.135.28.85
+node2 ansible_ssh_host=18.130.94.98
+node3 ansible_ssh_host=18.133.238.220 ansible_user=centos
+
+
+Setup Passwordless SSH between ansible and cliebt1 and 2 
+==============================================================
+
+ssh ubuntu@18.135.28.85
+
+ubuntu@ip-172-31-25-118:~$ ssh ubuntu@18.135.28.85
+The authenticity of host '18.135.28.85 (18.135.28.85)' can't be established.
+ECDSA key fingerprint is SHA256:VkNH9RRnyhr+8ZuyVcz27bcMc+eIePtcjHaxBYpBIac.
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+Warning: Permanently added '18.135.28.85' (ECDSA) to the list of known hosts.
+ubuntu@18.135.28.85: Permission denied (publickey).
+
+Failed !!  
+
+ssh ubuntu@18.130.94.98
+
+**********  Generate a new public key on Master node  ************
+ubuntu@ip-172-31-25-118:~$ ssh-keygen
+Generating public/private rsa key pair.
+Enter file in which to save the key (/home/ubuntu/.ssh/id_rsa):
+Enter passphrase (empty for no passphrase):
+Enter same passphrase again:
+Your identification has been saved in /home/ubuntu/.ssh/id_rsa
+Your public key has been saved in /home/ubuntu/.ssh/id_rsa.pub
+The key fingerprint is:
+SHA256:VFNy4UqHCOdIomaseRnvwAnALHuNzKpYrHC4Ipna7FU ubuntu@ip-172-31-25-118
+The key's randomart image is:
++---[RSA 3072]----+
+|+   . o . +.+.   |
+|o+ . o = o *     |
+|o+*o  . + o o    |
+|.B==.  . . o     |
+|o=* . E S .      |
+|+.+o .           |
+|+B  o            |
+|Xo .             |
+|=.+              |
++----[SHA256]-----+
+
+
+********   Now copy the encrypted key from "id_rsa.pub" on Master and put that to authorized_keys to Cliebt1 & 2 nodes
+
+Now try conneciton   -  Alwsys publuc IP is used 
+
+Client1
+***************
+
+ubuntu@ip-172-31-25-118:~/.ssh$ ssh ubuntu@18.135.28.85
+Welcome to Ubuntu 20.04.1 LTS (GNU/Linux 5.4.0-1029-aws x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+  System information as of Sun Jan 24 11:14:50 UTC 2021
+
+  System load:  0.0               Processes:             105
+  Usage of /:   21.3% of 7.69GB   Users logged in:       1
+  Memory usage: 24%               IPv4 address for eth0: 172.31.31.186
+  Swap usage:   0%
+
+
+89 updates can be installed immediately.
+40 of these updates are security updates.
+To see these additional updates run: apt list --upgradable
+
+
+Last login: Sun Jan 24 11:00:23 2021 from 86.10.242.186
+
+ubuntu@ip-172-31-31-186:~$
+
+
+Client2
+*****************
+
+ubuntu@ip-172-31-25-118:~/.ssh$ ssh ubuntu@18.130.94.98
+The authenticity of host '18.130.94.98 (18.130.94.98)' can't be established.
+ECDSA key fingerprint is SHA256:DDnd4i9Gh2BOPuVyNqek5j6WPenG6K3kNViLfnWxTKw.
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+Warning: Permanently added '18.130.94.98' (ECDSA) to the list of known hosts.
+Welcome to Ubuntu 20.04.1 LTS (GNU/Linux 5.4.0-1029-aws x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+  System information as of Sun Jan 24 11:15:22 UTC 2021
+
+  System load:  0.0               Processes:             105
+  Usage of /:   21.3% of 7.69GB   Users logged in:       1
+  Memory usage: 25%               IPv4 address for eth0: 172.31.24.221
+  Swap usage:   0%
+
+
+87 updates can be installed immediately.
+40 of these updates are security updates.
+To see these additional updates run: apt list --upgradable
+
+
+Last login: Sun Jan 24 11:02:19 2021 from 86.10.242.186
+ubuntu@ip-172-31-24-221:~$
+
+
+
+
+*************   IP address in ansible hosts files are Public IP of Clients     *****************
+
+under /etc/ansible/hosts  on MASTER Define below name of cleints/slave. 
+
+
+node1 ansible_ssh_host=18.135.28.85
+node2 ansible_ssh_host=18.130.94.98
+
+
+********** Test the connection ************
+
+
+ubuntu@ip-172-31-25-118:/etc/ansible$ ansible -m ping all
+[DEPRECATION WARNING]: Distribution Ubuntu 20.04 on host node2 should use /usr/bin/python3, but is using /usr/bin/python for backward compatibility with prior Ansible releases. A future
+Ansible release will default to using the discovered platform python for this host. See https://docs.ansible.com/ansible/2.9/reference_appendices/interpreter_discovery.html for more
+information. This feature will be removed in version 2.12. Deprecation warnings can be disabled by setting deprecation_warnings=False in ansible.cfg.
+node2 | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python"
+    },
+    "changed": false,
+    "ping": "pong"
+}
+[DEPRECATION WARNING]: Distribution Ubuntu 20.04 on host node1 should use /usr/bin/python3, but is using /usr/bin/python for backward compatibility with prior Ansible releases. A future
+Ansible release will default to using the discovered platform python for this host. See https://docs.ansible.com/ansible/2.9/reference_appendices/interpreter_discovery.html for more
+information. This feature will be removed in version 2.12. Deprecation warnings can be disabled by setting deprecation_warnings=False in ansible.cfg.
+node1 | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python"
+    },
+    "changed": false,
+    "ping": "pong"
+}
+
+
+***To disable the above warning ***********************
+
+
+deprecation_warnings=False in ansible.cfg
+
+*********************************************************
+
+
+In the above case, we have defined all clints name in the /etc/ansible/host file,
+
+we can define our own personal inventory file in which we  can keep our own list of clients/slaves manageed by Ansible Controller. 
+
+ubuntu@ip-172-31-25-118:~/ansible_amit$ pwd
+/home/ubuntu/ansible_amit
+
+
+To create your inventory, make a folder (eg. ansible_amit) on Ansible control server and inside the folder create a file development.txt. 
+
+From now, this folder is going to be our work area. Put the following text inside development.txt:
+
+[controller]
+control ansible_connection=local
+
+[loadbalancer]
+lb01 ansible_user=ubuntu
+
+[webserver]
+node1 ansible_user=ubuntu
+node2 ansible_user=ubuntu
+
+
+Now you can run the command:
+
+ubuntu@ip-172-31-25-118:~/ansible_amit$ ansible -i development.txt --list-hosts all
+  hosts (4):
+    control
+    lb01
+    node1
+    node2
+
+
+
+As can be seen 
+
+ubuntu:Ansible-Master > pwd
+/home/ubuntu/ansible_amit
+
+ubuntu:Ansible-Master > ansible --list-hosts all					//  this pull details from /etc/ansible/host file
+  hosts (2):
+    node1
+    node2
+ubuntu:Ansible-Master > ansible -i development.txt --list-hosts all                  //  this pull details from development.txt file under local directory
+  hosts (4):
+    control
+    lb01
+    node1
+    node2
+
+
+
+However, we don’t want to point to the development.txt file every time. In the same directory, create a ansible.cfg file and enter the following:
+
+[defaults]
+inventory = ./development.txt
+Now we can run:
+
+$ ubuntu:Ansible-Master > ansible --list-hosts all
+  hosts (3):
+    control
+    node1
+    node2
+
+
+The flag ansible_connection=local tells Ansible that control machine is a local server, so ansible doesn’t need to ssh into it. The ansible_user=ansible is telling that ssh username is ansible (in your case it could be ansible_user=john).
+
+
+
+ubuntu:Ansible-Master > ansible all -m gather_facts
+
+ubuntu:Ansible-Master > ansible -m ping node1
+[DEPRECATION WARNING]: Distribution Ubuntu 20.04 on host node1 should use /usr/bin/python3, but is using /usr/bin/python for backward compatibility with prior Ansible releases. A future
+Ansible release will default to using the discovered platform python for this host. See https://docs.ansible.com/ansible/2.9/reference_appendices/interpreter_discovery.html for more
+information. This feature will be removed in version 2.12. Deprecation warnings can be disabled by setting deprecation_warnings=False in ansible.cfg.
+node1 | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python"
+    },
+    "changed": false,
+    "ping": "pong"
+}
+ubuntu:Ansible-Master > ansible -m ping node2
+[DEPRECATION WARNING]: Distribution Ubuntu 20.04 on host node2 should use /usr/bin/python3, but is using /usr/bin/python for backward compatibility with prior Ansible releases. A future
+Ansible release will default to using the discovered platform python for this host. See https://docs.ansible.com/ansible/2.9/reference_appendices/interpreter_discovery.html for more
+information. This feature will be removed in version 2.12. Deprecation warnings can be disabled by setting deprecation_warnings=False in ansible.cfg.
+node2 | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python"
+    },
+    "changed": false,
+    "ping": "pong"
+}
+
+
+
+

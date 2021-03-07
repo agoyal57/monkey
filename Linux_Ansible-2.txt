@@ -1,0 +1,335 @@
+Playbook 1 
+
+===================================
+
+
+
+---
+ - hosts: node1
+   become: true
+   name:  play1
+   tasks:
+    - name: Install Apache
+      apt: name=apache2 state=latest
+
+
+
+
+
+*** To Remove Apache - 
+
+ sudo apt-get purge apache2
+
+
+
+ubuntu:Ansible-Master > ansible-playbook install_apache.yaml
+
+PLAY [play1] ************************************************************************************************************************************************************************************
+
+TASK [Gathering Facts] **************************************************************************************************************************************************************************
+[DEPRECATION WARNING]: Distribution Ubuntu 20.04 on host node1 should use /usr/bin/python3, but is using /usr/bin/python for backward compatibility with prior Ansible releases. A future
+Ansible release will default to using the discovered platform python for this host. See https://docs.ansible.com/ansible/2.9/reference_appendices/interpreter_discovery.html for more
+information. This feature will be removed in version 2.12. Deprecation warnings can be disabled by setting deprecation_warnings=False in ansible.cfg.
+ok: [node1]
+
+TASK [Install Apache] ***************************************************************************************************************************************************************************
+[WARNING]: Updating cache and auto-installing missing dependency: python-apt
+changed: [node1]
+
+PLAY RECAP **************************************************************************************************************************************************************************************
+node1                      : ok=2    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+
+
+
+
+
+
+Run some commands -  
+
+ubuntu:Ansible-Master > ansible all -m command -a uptime
+[DEPRECATION WARNING]: Distribution Ubuntu 20.04 on host node1 should use /usr/bin/python3, but is using /usr/bin/python for backward compatibility with prior Ansible releases. A future
+Ansible release will default to using the discovered platform python for this host. See https://docs.ansible.com/ansible/2.9/reference_appendices/interpreter_discovery.html for more
+information. This feature will be removed in version 2.12. Deprecation warnings can be disabled by setting deprecation_warnings=False in ansible.cfg.
+node1 | CHANGED | rc=0 >>
+ 13:17:59 up  2:43,  2 users,  load average: 0.00, 0.00, 0.00
+[DEPRECATION WARNING]: Distribution Ubuntu 20.04 on host node2 should use /usr/bin/python3, but is using /usr/bin/python for backward compatibility with prior Ansible releases. A future
+Ansible release will default to using the discovered platform python for this host. See https://docs.ansible.com/ansible/2.9/reference_appendices/interpreter_discovery.html for more
+information. This feature will be removed in version 2.12. Deprecation warnings can be disabled by setting deprecation_warnings=False in ansible.cfg.
+node2 | CHANGED | rc=0 >>
+ 13:17:59 up  2:43,  2 users,  load average: 0.00, 0.00, 0.00
+
+
+
+
+
+Playbook 2
+==============
+
+
+
+--- 
+- 
+  hosts: all
+  become: true
+  name: play2
+  tasks: 
+    - name: "Find the disk space available"
+      command: "df -h"
+      
+    - name: "List all the files"
+      command: "ls -lrt"
+      
+    - name: "List All the Files"
+      register: output
+      shell: "ls -lrt"
+
+    - name: Execute the Uptime command over Command module
+      register: uptimeoutput
+      command: "uptime"
+    - 
+      debug: var=output.stdout_lines
+
+
+
+
+
+###############  Playbook 3   ################
+
+
+---
+  - name: Check the remote host uptime
+    hosts: all
+    become: true
+    tasks:
+      - name: Execute the Uptime command over Command module
+        register: uptimeoutput
+        command: "uptime"
+
+      - debug:
+          var: uptimeoutput.stdout_lines
+
+
+ubuntu:Ansible-Master > ansible-playbook run_commds.yaml
+
+PLAY [Check the remote host uptime] *************************************************************************************************************************************************************
+
+TASK [Gathering Facts] **************************************************************************************************************************************************************************
+ok: [node2]
+ok: [node1]
+
+TASK [Execute the Uptime command over Command module] *******************************************************************************************************************************************
+changed: [node2]
+changed: [node1]
+
+TASK [debug] ************************************************************************************************************************************************************************************
+ok: [node1] => {
+    "uptimeoutput.stdout_lines": [
+        " 13:26:34 up  2:52,  2 users,  load average: 0.00, 0.00, 0.00"
+    ]
+}
+ok: [node2] => {
+    "uptimeoutput.stdout_lines": [
+        " 13:26:34 up  2:52,  2 users,  load average: 0.00, 0.00, 0.00"
+    ]
+}
+
+PLAY RECAP **************************************************************************************************************************************************************************************
+node1                      : ok=3    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+node2                      : ok=3    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+
+
+
+#################  Playbook 3   ##############
+
+
+---
+  - name: Check the remote host Hostname, Version, Distribution with UNAME
+    hosts: all
+    tasks:
+      - name: Execute the Uptime command over Command module
+        register: uptimeoutput
+        command: "uptime"
+
+      - debug:
+          var: unameout.stdout_lines
+
+
+
+
+#################  Playbook 4  ##########
+
+
+---
+  - name: Check the disk usage of all the file system in the remote servers
+    hosts: all
+    become: true
+    tasks:
+      - name: Execute the df command
+        register: dfout
+        command: "df -h"
+
+      - debug:
+          var: dfout.stdout_lines
+
+
+
+
+####################   Playbook 5  ##########
+
+
+---
+ - hosts: node1
+   become: true
+   name:  play1
+   tasks:
+    - name: Install Apache
+      apt: name=apache2 state=latest
+
+ubuntu:Ansible-Master > ansible-playbook apache.yaml
+
+PLAY [play1] ************************************************************************************************************************************************************************************
+
+TASK [Gathering Facts] **************************************************************************************************************************************************************************
+ok: [node2]
+
+TASK [Install Apache] ***************************************************************************************************************************************************************************
+[WARNING]: Updating cache and auto-installing missing dependency: python-apt
+changed: [node2]
+
+PLAY RECAP **************************************************************************************************************************************************************************************
+node2                      : ok=2    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+
+
+**** If i use hosts : all
+
+
+ubuntu:Ansible-Master > ansible-playbook apache.yaml
+
+PLAY [play1] ************************************************************************************************************************************************************************************
+
+TASK [Gathering Facts] **************************************************************************************************************************************************************************
+ok: [node1]
+ok: [node2]
+
+TASK [Install Apache] ***************************************************************************************************************************************************************************
+changed: [node2]
+changed: [node1]
+
+PLAY RECAP **************************************************************************************************************************************************************************************
+node1                      : ok=2    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+node2                      : ok=2    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+
+
+
+
+################  Playbook 6  ##########
+
+
+---
+-
+  become: true
+  hosts: all
+  name: play1
+  tasks:
+    -
+      apt: "name=apache2 state=latest"
+      name: "Install Apache"
+
+  tasks:
+    -
+      command: uptime
+      name: "Execute the Uptime command over Command module"
+      register: uptimeoutput
+    -
+      debug:
+        var: uptimeoutput.stdout_lines
+~
+~
+~
+
+
+
+
+ubuntu:Ansible-Master > ansible-playbook apache.yaml
+[WARNING]: While constructing a mapping from /home/ubuntu/apache.yaml, line 3, column 3, found a duplicate dict key (tasks). Using last defined value only.
+
+PLAY [play1] ************************************************************************************************************************************************************************************
+
+TASK [Gathering Facts] **************************************************************************************************************************************************************************
+ok: [node1]
+ok: [node2]
+
+TASK [Execute the Uptime command over Command module] *******************************************************************************************************************************************
+changed: [node2]
+changed: [node1]
+
+TASK [debug] ************************************************************************************************************************************************************************************
+ok: [node1] => {
+    "uptimeoutput.stdout_lines": [
+        " 14:43:44 up  4:09,  2 users,  load average: 0.45, 0.18, 0.06"
+    ]
+}
+ok: [node2] => {
+    "uptimeoutput.stdout_lines": [
+        " 14:43:44 up  4:09,  2 users,  load average: 0.08, 0.03, 0.01"
+    ]
+}
+
+PLAY RECAP **************************************************************************************************************************************************************************************
+node1                      : ok=3    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+node2                      : ok=3    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+
+
+
+
+
+
+
+ Playbook 7  - Install nigix webserver
+
+#######################################
+
+
+---
+- hosts: all
+  become: true
+  vars:
+    - server_port: 8080
+
+  tasks:
+    - name: Installs nginx web server
+      apt: pkg=nginx state=latest update_cache=true
+      notify:
+        - start nginx
+
+  handlers:
+    - name: start nginx
+      service: name=nginx state=started
+
+
+ubuntu:Ansible-Master > ansible-playbook ngix.yaml
+
+PLAY [all] **************************************************************************************************************************************************************************************
+
+TASK [Gathering Facts] **************************************************************************************************************************************************************************
+ok: [node1]
+ok: [node2]
+
+TASK [Installs nginx web server] ****************************************************************************************************************************************************************
+changed: [node2]
+changed: [node1]
+
+RUNNING HANDLER [start nginx] *******************************************************************************************************************************************************************
+ok: [node1]
+ok: [node2]
+
+PLAY RECAP **************************************************************************************************************************************************************************************
+node1                      : ok=3    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+node2                      : ok=3    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+
+
+Verify ####
+
+http://18.135.28.85/8080
+
+Public IP/8080 
